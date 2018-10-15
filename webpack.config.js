@@ -2,6 +2,7 @@
 const path = require("path");
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 
 module.exports = {
   entry: { main: "./src/index.js" },
@@ -11,28 +12,33 @@ module.exports = {
   },
   module: {
     rules: [
-      {
-        test: /\.m?js$/,
-        exclude: /(node_modules|bower_components)/,
-        use: {
-          loader: "babel-loader",
-          //options: {
-          //  presets: ["@babel/preset-env"]
-          //}
-        }
-      },
+      // {
+      //   test: /\.js$/,
+      //   exclude: /(node_modules|bower_components)/,
+      //   use: {
+      //     loader: "babel-loader",
+      //     //options: {
+      //     //  presets: ["@babel/preset-env"]
+      //     //}
+      //   }
+      // },
       {
         test: /(\.css$)|(\.scss$)/,
-        use: [MiniCssExtractPlugin.loader,  "css-loader", "postcss-loader","sass-loader"]
+        use: [MiniCssExtractPlugin.loader,  "css-loader", "postcss-loader","sass-loader"],
+      },
+      {
+        test: /\.hbs$/, loader: "handlebars-loader",
       },
       
     ]
   },
   plugins: [ 
+    new CleanWebpackPlugin('build/*.*', {} ),
     new HtmlWebpackPlugin({
       //inject: false,
       hash: true,
       template: './src/index.html',
+      favicon: './src/favicon.ico',
       filename: 'index.html',
       title: "JS_Homework_13"
     }),
