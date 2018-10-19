@@ -1,14 +1,14 @@
-class EventEmmiter {
+export default class EventEmmiter {
   constructor() {
     this._eventsList = {};
   }
-  attachEvent(evt, cb) {
+  attachCallback(evt, cb) {
     if (!this._eventsList[evt]) {
       this._eventsList[evt] = [];
     }
     this._eventsList[evt].push(cb);
   }
-  detachEvent(evt, cb) {
+  detachCallback(evt, cb) {
     if (!this._eventsList[evt]) {
       return;
     }
@@ -23,5 +23,3 @@ class EventEmmiter {
     this._eventsList[evt].forEach(item => item(...args));
   }
 }
-
-export default EventEmmiter;
