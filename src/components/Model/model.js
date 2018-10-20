@@ -24,6 +24,8 @@ export default class Model extends EventEmitter {
       }
     }
 
+    this._listOfURLs.sort((a, b) => b.index-a.index);
+
     window.addEventListener('storage', this.handleManualLsClear.bind(this));
   }
 
@@ -51,12 +53,10 @@ export default class Model extends EventEmitter {
       });
     } else {
       this.emitEvent('request');
-      //debugger
       requestPromise = window.fetch(`https://api.linkpreview.net/?key=${this._accessKey}&q=${url}`)
     }
     
     requestPromise.then(response => {
-      //console.log(response);
       if (response.ok) {
         return response.json();
       } else {
@@ -69,10 +69,8 @@ export default class Model extends EventEmitter {
       // добавляем, только если такой ссылки 
       // (именно такой, которую вернул API) еще нет в массиве ссылок 
       // (и, соответственно, в localStorage)
-      //debugger
       const UUIDsPlacedIntoList = this._listOfURLs.map(item => item.url);
       if (UUIDsPlacedIntoList.includes(data.url)){
-        //this.emitEvent('error', 'URL is already in the list');
         const err = new Error('URL is already in the list');
         err.code = -1;
         throw err;
@@ -80,16 +78,16 @@ export default class Model extends EventEmitter {
 
       const newItem = {...data};
       newItem.uuid = this._keyPrefix + uuidv1();
-      this._theLargestIndexOfLinks += 1;
-      newItem.index = this._theLargestIndexOfLinks;
       this._listOfURLs.unshift(newItem);
-      this.emitEvent('changed', this._listOfURLs);
 
       if (storageAvailable('localStorage')) {
+        this._theLargestIndexOfLinks += 1;
+        newItem.index = this._theLargestIndexOfLinks;
         localStorage.setItem(newItem.uuid, JSON.stringify(newItem));
-      } else {
-        this.emitEvent('absentInLS', newItem.uuid);
-      }
+      } 
+
+      this.emitEvent('changed', this._listOfURLs);
+
     })
     .catch(err => {
       this.emitEvent('error', handleHTTPRequestError(err));
@@ -101,22 +99,23 @@ export default class Model extends EventEmitter {
   }
 
   handleManualLsClear(evt) {
-    // alert(`old = ${evt.oldValue}, new = ${evt.newValue}`);
-    // alert(JSON.parse(evt.oldValue).uuid);
+    // при возникновении события функция пробегается по всем оставшимся элементам в LS
+    // и сравнивает их со списком this._listOfURLs
+    // для записей из this._listOfURLs, которых нет в LS, удаляется поле index
+    // тогда они будут подкрашены красноватым цветом на странице
 
-
-    // if (!evt.key.includes(this._keyPrefix)) {
-    //   return;
-    // }
-    console.dir(evt.key);
-    console.dir(evt.oldValue);
-    try {
-      
-      JSON.parse(evt.oldValue);
-    } catch(err) {
-
+    const itemsInLS = []; // временный массив того, что у нас на текущий момент осталось в локальном хранилище
+    for (let i = 0; i < localStorage.length; i++) {
+      if (localStorage.key(i).includes(this._keyPrefix)) {
+        itemsInLS.push(localStorage.key(i));
+      }
     }
-
+    this._listOfURLs.forEach(item => {
+      if (!itemsInLS.find(x => x === item.uuid)) {
+        delete item.index;
+      }
+    })
+    this.emitEvent('changed', this._listOfURLs);
   }
 
 }

@@ -1,4 +1,4 @@
-<li class="record urlinfo__item" data-uuid={{uuid}}>
+<li class="record urlinfo__item {{#unless index}} record--absent {{/unless}}" data-uuid={{uuid}}>
   <p class = "record__title">{{title}}</p>
   <a class = "record__url" href = "{{url}}">{{url}}</a>
   <p class = "record__descr">{{description}}</p>

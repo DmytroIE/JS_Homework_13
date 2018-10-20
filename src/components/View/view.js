@@ -27,7 +27,6 @@ export default class View extends EventEmitter {
     this.model = model;
     this.model.attachCallback('request', this.showSpinner.bind(this));
     this.model.attachCallback('changed', this.render.bind(this));
-    this.model.attachCallback('absentInLS', this.markItemAsAbsentInLS.bind(this));
     this.model.attachCallback('error', this.showErrModal.bind(this));
     
 
